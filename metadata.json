@@ -1,0 +1,6 @@
+{
+  "name": "Log Calculator",
+  "description": "A precision logarithm and antilogarithm calculator featuring arbitrary bases, mathematical breakdowns, change-of-base analysis, and interactive function curves.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
