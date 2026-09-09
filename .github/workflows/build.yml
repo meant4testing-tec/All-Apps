@@ -1,4 +1,4 @@
-name: Build and Release Android APK
+name: Build Android APK
 
 on:
   push:
@@ -11,33 +11,38 @@ permissions:
   contents: write
 
 jobs:
-  build-and-release:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Java JDK
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Build Webview APK
+      - name: Install Cordova & Build APK
         run: |
-          npm install -g @bubblewrap/cli
-          yes | npx @bubblewrap/cli init --manifest=https://$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]').github.io/${{ github.event.repository.name }}/manifest.json || true
+          npm install -g cordova
+          cordova create myApp com.example.app MyApp
+          cp -r index.html css js myApp/www/ 2>/dev/null || cp -r * myApp/www/ 2>/dev/null || true
+          cd myApp
+          cordova platform add android
+          cordova build android --no-telemetry
 
-      - name: Create Automatic Release & Upload APK
+      - name: Create Release & Upload APK
         uses: softprops/action-gh-release@v2
         with:
           tag_name: release-${{ github.run_number }}
           name: "App Release v1.0.${{ github.run_number }}"
-          body: "Automatic build triggered by code update."
-          files: "**/*.apk"
+          files: "myApp/platforms/android/app/build/outputs/apk/debug/*.apk"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
